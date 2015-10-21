@@ -1,15 +1,18 @@
 # Created by Jonas Rosland, @virtualswede & Matt Cowger, @mcowger
 # Many thanks to this post by James Carr: http://blog.james-carr.org/2013/03/17/dynamic-vagrant-nodes/
-# SecureVM Additions by James Scott
+# SecureVM Additions James Scott
+
+
+
+#Use SecureVM if True, once ScaleIO is setup it will create and encrypt the SDC volume on mdm2
+svm = "True"
+
+#SecureVM Server please set the FQDN for example "myclc.domain.local" or "myapp.cloudapp.net"
+svmserver="myclc.domain.local"
 
 #SecureVM Download Location
-svmdownload="http://YOUR_CLOUDLINKCENTER:8080/cloudlink/securevm"
+svmdownload="http://#{svmserver}:8080/cloudlink/securevm"
 
-#SecureVM Server
-svmserver="YOUR_CLOUDLINKCENTER"
-
-#Use SecureVM
-svm= "True" #If true once ScaleIO is setup, it will create and encrypt the SDC volume on mdm2
 
 # vagrant box
 vagrantbox="centos_6.5"
