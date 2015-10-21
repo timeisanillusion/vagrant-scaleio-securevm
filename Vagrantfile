@@ -2,12 +2,14 @@
 # Many thanks to this post by James Carr: http://blog.james-carr.org/2013/03/17/dynamic-vagrant-nodes/
 # SecureVM Additions James Scott
 
-#SecureVM Download 
-svmdownload="http://clc5tp-js-1.cloudapp.net:8080/cloudlink/securevm"
+#SecureVM Download Location
+svmdownload="http://YOUR_CLOUDLINKCENTER:8080/cloudlink/securevm"
 
 #SecureVM Server
-svmserver="clc5tp-js-1.cloudapp.net"
+svmserver="YOUR_CLOUDLINKCENTER"
 
+#Use SecureVM
+svm= "True" #If true once ScaleIO is setup, it will create and encrypt the SDC volume on mdm2
 
 # vagrant box
 vagrantbox="centos_6.5"
@@ -96,7 +98,7 @@ Vagrant.configure("2") do |config|
         node_config.vm.network "private_network", ip: "#{secondmdmip}"
         node_config.vm.provision "shell" do |s|
           s.path = "scripts/mdm2.sh"
-          s.args   = "-o #{os} -v #{version} -n #{packagename} -d #{device} -f #{firstmdmip} -s #{secondmdmip} -i #{siinstall} -t #{tbip} -p #{password} -c #{clusterinstall} -e #{svmserver} -w #{svmdownload}"
+          s.args   = "-o #{os} -v #{version} -n #{packagename} -d #{device} -f #{firstmdmip} -s #{secondmdmip} -i #{siinstall} -t #{tbip} -p #{password} -c #{clusterinstall} -e #{svmserver} -w #{svmdownload} -k #{svm}"
         end
       end
     end

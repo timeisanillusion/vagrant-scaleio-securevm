@@ -52,6 +52,10 @@ do
     SVMDOWNLOAD="$2"
     shift
     ;;
+    -k|--svm)
+    SVM="$2"
+    shift
+    ;;
     *)
     # unknown option
     ;;
@@ -68,6 +72,7 @@ echo SECONDMDMIP    = "${SECONDMDMIP}"
 echo TBIP    = "${TBIP}"
 echo PASSWORD    = "${PASSWORD}"
 echo CLUSTERINSTALL   =  "${CLUSTERINSTALL}"
+echo SVM   =  "${SVM}"
 echo SVMDOWNLOAD    = "${SVMDOWNLOAD}"
 echo SVMSERVER    = "${SVMSERVER}"
 
@@ -109,21 +114,22 @@ if [ "${CLUSTERINSTALL}" == "True" ]; then
 fi
 
 #Install SecureVM
-echo "Downloading SecureVM"
-wget ${SVMDOWNLOAD}
-chmod +x securevm
-./securevm -S ${SVMSERVER}
+if [ "${SVM}" == "True" ]; then
+  echo "Downloading SecureVM"
+  wget ${SVMDOWNLOAD}
+  chmod +x securevm
+  ./securevm -S ${SVMSERVER}
 
-#automates the encryption if needed
-echo "Formatting SDC EXT3"
-mkfs.ext3 /dev/scinia
-echo "Format Complete"
-mkdir /datavol1
-echo "Mounting SDC to /datavol1"
-mount /dev/scinia /datavol1
-echo "Encrypting /datavol1, please wait.  Please ensure the VM is approved if needed on CloudLink center"
-svm encrypt /datavol1 /dev/scinia
-
+  #automates the encryption if needed
+  echo "Formatting SDC EXT3"
+  mkfs.ext3 /dev/scinia
+  echo "Format Complete"
+  mkdir /datavol1
+  echo "Mounting SDC to /datavol1"
+  mount /dev/scinia /datavol1
+  echo "Encrypting /datavol1, please wait.  Please ensure the VM is approved if needed on CloudLink center"
+  svm encrypt /datavol1 /dev/scinia
+fi
 
 if [[ -n $1 ]]; then
   echo "Last line of file specified as non-opt/last argument:"

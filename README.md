@@ -3,7 +3,7 @@ vagrant-scaleio
 
 # Description
 
-Vagrantfile to create a three-VM EMC ScaleIO lab setup.
+Vagrantfile to create a three-VM EMC ScaleIO lab setup and create an encrypted mount using CloudLink SecureVM.
 
 # Usage
 
@@ -14,7 +14,9 @@ To use this, you'll need to complete a few steps:
 1. `git clone https://github.com/virtualswede/vagrant-scaleio.git`
 2. Edit the proxies (if needed)
 3. Edit clusterinstall parameter to adjust for different installation methods (default is True which mean a fully working ScaleIO cluster gets installed)
-4. Run `vagrant up` (if you have more than one Vagrant Provider on your machine run `vagrant up --provider virtualbox` instead)
+4. Add your own CloudLink Center details (You must install CloudLink Center seperatly for now
+5. Run `vagrant up` (if you have more than one Vagrant Provider on your machine run `vagrant up --provider virtualbox` instead)
+
 
 Note, the cluster will come up with the default unlimited license for dev and test use.
 
