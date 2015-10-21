@@ -1,6 +1,6 @@
 # Created by Jonas Rosland, @virtualswede & Matt Cowger, @mcowger
 # Many thanks to this post by James Carr: http://blog.james-carr.org/2013/03/17/dynamic-vagrant-nodes/
-# SecureVM Additions James Scott
+# SecureVM Additions by James Scott
 
 #SecureVM Download Location
 svmdownload="http://YOUR_CLOUDLINKCENTER:8080/cloudlink/securevm"
