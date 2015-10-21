@@ -11,7 +11,7 @@ This Vagrant setup will automatically deploy three CentOS 6.5 nodes, download th
 
 To use this, you'll need to complete a few steps:
 
-1. `git clone https://github.com/virtualswede/vagrant-scaleio.git`
+1. `git clone https://github.com/timeisanillusion/vagrant-scaleio-securevm`
 2. Edit the proxies (if needed)
 3. Edit clusterinstall parameter to adjust for different installation methods (default is True which mean a fully working ScaleIO cluster gets installed)
 4. Add your own CloudLink Center details (You must install CloudLink Center seperatly for now
