@@ -108,27 +108,54 @@ if [ "${CLUSTERINSTALL}" == "True" ]; then
   echo "Waiting for 30 seconds to make sure the SDSs are created"
   sleep 30
   scli --add_volume --mdm_ip ${FIRSTMDMIP} --size_gb 8 --volume_name vol1 --protection_domain_name pdomain --storage_pool_name pool1
-  #scli --map_volume_to_sdc --mdm_ip ${FIRSTMDMIP} --volume_name vol1 --sdc_ip ${FIRSTMDMIP} --allow_multi_map
+  scli --map_volume_to_sdc --mdm_ip ${FIRSTMDMIP} --volume_name vol1 --sdc_ip ${FIRSTMDMIP} --allow_multi_map
   scli --map_volume_to_sdc --mdm_ip ${FIRSTMDMIP} --volume_name vol1 --sdc_ip ${SECONDMDMIP}
-  #scli --map_volume_to_sdc --mdm_ip ${FIRSTMDMIP} --volume_name vol1 --sdc_ip ${TBIP} --allow_multi_map
+  scli --map_volume_to_sdc --mdm_ip ${FIRSTMDMIP} --volume_name vol1 --sdc_ip ${TBIP} --allow_multi_map
 fi
+
+echo SVMDOWNLOAD    = "${SVMDOWNLOAD}"
+echo SVMSERVER    = "${SVMSERVER}"
+
+#Setup SecureVM Server
+if [ "${SVM}" == "True" ]; then
+  echo "Downloading Packages Needed for API configuration"
+  yum install nodejs -y
+  yum install npm -y
+  npm -g install optimist request-promise bluebird
+  export NODE_PATH=/usr/lib/node_modules:$NODE_PATH
+  export SVMLOC="${SVMSERVER}"
+  echo "Downloading Latest Setup Script"
+  wget https://raw.githubusercontent.com/timeisanillusion/securevm-autodeploy/master/wizard.js
+  wget https://raw.githubusercontent.com/timeisanillusion/securevm-autodeploy/master/license.lic
+  
+  
+  echo "Running initial configuration"
+  node wizard.js -a "https://"+"$SVMSERVER" -w new
+  node wizard.js -a "https://"+"$SVMSERVER" -w custom
+  
+fi
+
 
 #Install SecureVM
 if [ "${SVM}" == "True" ]; then
   echo "Downloading SecureVM"
+  
+  #ensure fresh download of the script
+   rm -f securevm*.*
+  
   wget ${SVMDOWNLOAD}
   chmod +x securevm
   ./securevm -S ${SVMSERVER}
 
   #automates the encryption if needed
-  echo "Formatting SDC EXT3"
-  mkfs.ext3 /dev/scinia
-  echo "Format Complete"
-  mkdir /datavol1
-  echo "Mounting SDC to /datavol1"
-  mount /dev/scinia /datavol1
-  echo "Encrypting /datavol1, please wait.  Please ensure the VM is approved if needed on CloudLink center"
-  svm encrypt /datavol1 /dev/scinia
+  #echo "Formatting SDC EXT3"
+  #mkfs.ext3 /dev/scinia
+  #echo "Format Complete"
+  #mkdir /datavol1
+  #echo "Mounting SDC to /datavol1"
+  #mount /dev/scinia /datavol1
+  #echo "Encrypting /datavol1, please wait.  Please ensure the VM is approved if needed on CloudLink center"
+  #svm encrypt /datavol1 /dev/scinia
 fi
 
 if [[ -n $1 ]]; then

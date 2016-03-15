@@ -5,10 +5,10 @@
 
 
 #Use SecureVM if True, once ScaleIO is setup it will create and encrypt the SDC volume on mdm2
-svm = "True"
+svm = "False"
 
 #SecureVM Server please set the FQDN for example "myclc.domain.local" or "myapp.cloudapp.net"
-svmserver="myclc.domain.local"
+svmserver="192.168.50.51"
 
 #SecureVM Download Location
 svmdownload="http://#{svmserver}:8080/cloudlink/securevm"
