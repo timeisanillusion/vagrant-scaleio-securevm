@@ -4,11 +4,14 @@
 
 
 
-#Use SecureVM if True, once ScaleIO is setup it will create and encrypt the SDC volume on mdm2
-svm = "False"
+#Use SecureVM if True, once ScaleIO is setup it install SecureVM to each VM
+svm = "True"
+
+#Setup new CloudLink Center, if True will use REST APIs to configure the initial CloudLink Center appliance
+svms = "False"
 
 #SecureVM Server please set the FQDN for example "myclc.domain.local" or "myapp.cloudapp.net"
-svmserver="192.168.50.51"
+svmserver="192.168.116.148"
 
 #SecureVM Download Location
 svmdownload="http://#{svmserver}:8080/cloudlink/securevm"
@@ -84,7 +87,7 @@ Vagrant.configure("2") do |config|
         node_config.vm.network "private_network", ip: "#{tbip}"
         node_config.vm.provision "shell" do |s|
           s.path = "scripts/tb.sh"
-          s.args   = "-o #{os} -v #{version} -n #{packagename} -d #{device} -f #{firstmdmip} -s #{secondmdmip} -i #{siinstall} -c #{clusterinstall}"
+          s.args   = "-o #{os} -v #{version} -n #{packagename} -d #{device} -f #{firstmdmip} -s #{secondmdmip} -i #{siinstall} -c #{clusterinstall} -e #{svmserver} -w #{svmdownload} -k #{svm} -j #{svms}"
         end
       end
 
@@ -93,7 +96,7 @@ Vagrant.configure("2") do |config|
         node_config.vm.network "forwarded_port", guest: 6611, host: 6611
         node_config.vm.provision "shell" do |s|
           s.path = "scripts/mdm1.sh"
-          s.args   = "-o #{os} -v #{version} -n #{packagename} -d #{device} -f #{firstmdmip} -s #{secondmdmip} -i #{siinstall} -p #{password} -c #{clusterinstall}"
+          s.args   = "-o #{os} -v #{version} -n #{packagename} -d #{device} -f #{firstmdmip} -s #{secondmdmip} -i #{siinstall} -p #{password} -c #{clusterinstall} -e #{svmserver} -w #{svmdownload} -k #{svm}"
         end
       end
 

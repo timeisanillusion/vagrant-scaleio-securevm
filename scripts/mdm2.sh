@@ -55,7 +55,7 @@ do
     -k|--svm)
     SVM="$2"
     shift
-    ;;
+	;;
     *)
     # unknown option
     ;;
@@ -116,25 +116,6 @@ fi
 echo SVMDOWNLOAD    = "${SVMDOWNLOAD}"
 echo SVMSERVER    = "${SVMSERVER}"
 
-#Setup SecureVM Server
-if [ "${SVM}" == "True" ]; then
-  echo "Downloading Packages Needed for API configuration"
-  yum install nodejs -y
-  yum install npm -y
-  npm -g install optimist request-promise bluebird
-  export NODE_PATH=/usr/lib/node_modules:$NODE_PATH
-  export SVMLOC="${SVMSERVER}"
-  echo "Downloading Latest Setup Script"
-  wget https://raw.githubusercontent.com/timeisanillusion/securevm-autodeploy/master/wizard.js
-  wget https://raw.githubusercontent.com/timeisanillusion/securevm-autodeploy/master/license.lic
-  
-  
-  echo "Running initial configuration"
-  node wizard.js -a "https://"+"$SVMSERVER" -w new
-  node wizard.js -a "https://"+"$SVMSERVER" -w custom
-  
-fi
-
 
 #Install SecureVM
 if [ "${SVM}" == "True" ]; then
@@ -147,7 +128,7 @@ if [ "${SVM}" == "True" ]; then
   chmod +x securevm
   ./securevm -S ${SVMSERVER}
 
-  #automates the encryption if needed
+  #automates the encryption if needed for SDC 
   #echo "Formatting SDC EXT3"
   #mkfs.ext3 /dev/scinia
   #echo "Format Complete"

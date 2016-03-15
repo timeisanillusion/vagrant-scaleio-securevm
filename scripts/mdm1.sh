@@ -40,6 +40,18 @@ do
     CLUSTERINSTALL="$2"
     shift
     ;;
+	 -e|--svmserver)
+    SVMSERVER="$2"
+    shift
+    ;;
+    -w|--svmdownload)
+    SVMDOWNLOAD="$2"
+    shift
+    ;;
+    -k|--svm)
+    SVM="$2"
+    shift
+	;;
     *)
     # unknown option
     ;;
@@ -53,6 +65,10 @@ echo OS    = "${OS}"
 echo PACKAGENAME    = "${PACKAGENAME}"
 echo FIRSTMDMIP    = "${FIRSTMDMIP}"
 echo SECONDMDMIP    = "${SECONDMDMIP}"
+echo SVM   =  "${SVM}"
+echo SVMDOWNLOAD    = "${SVMDOWNLOAD}"
+echo SVMSERVER    = "${SVMSERVER}"
+
 
 #echo "Number files in SEARCH PATH with EXTENSION:" $(ls -1 "${SEARCHPATH}"/*."${EXTENSION}" | wc -l)
 truncate -s 100GB ${DEVICE}
@@ -76,6 +92,19 @@ fi
 
 #sed -i 's/mdm.ip.addresses=/mdm.ip.addresses='${FIRSTMDMIP}','${SECONDMDMIP}'/' /opt/emc/scaleio/gateway/webapps/ROOT/WEB-INF/classes/gatewayUser.properties
 #service scaleio-gateway restart
+
+
+if [ "${SVM}" == "True" ]; then
+  echo "Downloading SecureVM"
+  
+  #ensure fresh download of the script
+   rm -f securevm*.*
+  
+  wget ${SVMDOWNLOAD}
+  chmod +x securevm
+  ./securevm -S ${SVMSERVER}
+fi
+
 
 if [[ -n $1 ]]; then
   echo "Last line of file specified as non-opt/last argument:"

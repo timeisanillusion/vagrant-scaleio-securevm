@@ -35,7 +35,23 @@ do
     -c|--clusterinstall)
     CLUSTERINSTALL="$2"
     shift
+	;;
+    -e|--svmserver)
+    SVMSERVER="$2"
+    shift
     ;;
+    -w|--svmdownload)
+    SVMDOWNLOAD="$2"
+    shift
+    ;;
+    -k|--svm)
+    SVM="$2"
+    shift
+	;;
+    -j|--svms)
+    SVMS="$2"
+    shift
+	;;
     *)
     # unknown option
     ;;
@@ -50,6 +66,12 @@ echo PACKAGENAME    = "${PACKAGENAME}"
 echo FIRSTMDMIP    = "${FIRSTMDMIP}"
 echo SECONDMDMIP    = "${SECONDMDMIP}"
 echo CLUSTERINSTALL = "${CLUSTERINSTALL}"
+echo SVM   =  "${SVM}"
+echo SVMS   =  "${SVMS}"
+echo SVMDOWNLOAD    = "${SVMDOWNLOAD}"
+echo SVMSERVER    = "${SVMSERVER}"
+echo SVMSERVERHTTP = "https://${SVMSERVER}"
+
 #echo "Number files in SEARCH PATH with EXTENSION:" $(ls -1 "${SEARCHPATH}"/*."${EXTENSION}" | wc -l)
 truncate -s 100GB ${DEVICE}
 yum install numactl libaio wget -y
@@ -63,6 +85,47 @@ if [ "${CLUSTERINSTALL}" == "True" ]; then
   rpm -Uv ${PACKAGENAME}-sds-${VERSION}.${OS}.x86_64.rpm
   MDM_IP=${FIRSTMDMIP},${SECONDMDMIP} rpm -Uv ${PACKAGENAME}-sdc-${VERSION}.${OS}.x86_64.rpm
 fi
+
+
+#Setup SecureVM Server
+if [ "${SVMS}" == "True" ]; then
+  echo "Downloading Packages Needed for API configuration"
+  yum install nodejs -y
+  yum install npm -y
+  echo "Waiting 10 seconds"
+  sleep 10
+  npm -g install optimist request-promise bluebird
+  echo "Waiting 10 seconds"
+  sleep 10
+  export NODE_PATH=/usr/lib/node_modules:$NODE_PATH
+  export SVMLOC="${SVMSERVER}"
+  echo "Downloading Latest Setup Script"
+  rm -f wizard.js
+  wget https://raw.githubusercontent.com/timeisanillusion/securevm-autodeploy/master/wizard.js
+  rm -f license.lic
+  wget https://raw.githubusercontent.com/timeisanillusion/securevm-autodeploy/master/license.lic
+  
+  
+  echo "Running initial configuration"
+  
+  node wizard.js -a ${SVMSERVERHTTP} -w new -r
+  node wizard.js -a ${SVMSERVERHTTP} -w custom
+  
+fi
+
+
+if [ "${SVM}" == "True" ]; then
+  echo "Downloading SecureVM"
+  
+  #ensure fresh download of the script
+   rm -f securevm*.*
+  
+  wget ${SVMDOWNLOAD}
+  chmod +x securevm
+  ./securevm -S ${SVMSERVER}
+  
+fi
+
 
 if [[ -n $1 ]]; then
   echo "Last line of file specified as non-opt/last argument:"
