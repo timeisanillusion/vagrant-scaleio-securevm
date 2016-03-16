@@ -32,6 +32,10 @@ do
     SECONDMDMIP="$2"
     shift
     ;;
+    -t|--tbip)
+    TBIP="$2"
+    shift
+	;;
     -p|--password)
     PASSWORD="$2"
     shift
@@ -63,6 +67,7 @@ echo INSTALL PATH     = "${INSTALLPATH}"
 echo VERSION    = "${VERSION}"
 echo OS    = "${OS}"
 echo PACKAGENAME    = "${PACKAGENAME}"
+echo TBIP    = "${TBIP}"
 echo FIRSTMDMIP    = "${FIRSTMDMIP}"
 echo SECONDMDMIP    = "${SECONDMDMIP}"
 echo SVM   =  "${SVM}"
@@ -75,19 +80,24 @@ truncate -s 100GB ${DEVICE}
 yum install numactl libaio -y
 yum install java-1.7.0-openjdk -y
 
+#install securevm packages if needed
+echo "Installing SecureVM Packages"
+yum install parted -y
+yum install wget -y
+yum install cryptsetup -y
+yum install rsync -y
 
-
-cd /vagrant/scaleio/ScaleIO_1.32_RHEL6_Download
+cd /vagrant/scaleio2
 
 # Always install ScaleIO IM
 #export GATEWAY_ADMIN_PASSWORD=${PASSWORD}
 #rpm -Uv ${PACKAGENAME}-gateway-${VERSION}.noarch.rpm
 
 if [ "${CLUSTERINSTALL}" == "True" ]; then
-  rpm -Uv ${PACKAGENAME}-mdm-${VERSION}.${OS}.x86_64.rpm
-  rpm -Uv ${PACKAGENAME}-sds-${VERSION}.${OS}.x86_64.rpm
-  MDM_IP=${FIRSTMDMIP},${SECONDMDIP} rpm -Uv ${PACKAGENAME}-sdc-${VERSION}.${OS}.x86_64.rpm
-  scli --mdm --add_primary_mdm --primary_mdm_ip ${FIRSTMDMIP} --accept_license
+  MDM_ROLE_IS_MANAGER=1 rpm -i ${PACKAGENAME}-mdm-${VERSION}.${OS}.x86_64.rpm
+  rpm -i ${PACKAGENAME}-sds-${VERSION}.${OS}.x86_64.rpm
+  MDM_IP=${FIRSTMDMIP},${SECONDMDMIP} rpm -i ${PACKAGENAME}-sdc-${VERSION}.${OS}.x86_64.rpm
+  
 fi
 
 #sed -i 's/mdm.ip.addresses=/mdm.ip.addresses='${FIRSTMDMIP}','${SECONDMDMIP}'/' /opt/emc/scaleio/gateway/webapps/ROOT/WEB-INF/classes/gatewayUser.properties

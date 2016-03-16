@@ -87,30 +87,60 @@ yum install wget -y
 yum install cryptsetup -y
 yum install rsync -y
 
-cd /vagrant/scaleio/ScaleIO_1.32_RHEL6_Download
+cd /vagrant/scaleio2
 
 if [ "${CLUSTERINSTALL}" == "True" ]; then
-  rpm -Uv ${PACKAGENAME}-mdm-${VERSION}.${OS}.x86_64.rpm
-  rpm -Uv ${PACKAGENAME}-sds-${VERSION}.${OS}.x86_64.rpm
-  MDM_IP=${FIRSTMDMIP},${SECONDMDIP} rpm -Uv ${PACKAGENAME}-sdc-${VERSION}.${OS}.x86_64.rpm
+  echo "Instaling MDM, SDS and SDC"
+  MDM_ROLE_IS_MANAGER=1 rpm -i ${PACKAGENAME}-mdm-${VERSION}.${OS}.x86_64.rpm
+  rpm -i ${PACKAGENAME}-sds-${VERSION}.${OS}.x86_64.rpm
+  MDM_IP=${FIRSTMDMIP},${SECONDMDMIP} rpm -i ${PACKAGENAME}-sdc-${VERSION}.${OS}.x86_64.rpm
 
-  scli --login --mdm_ip ${FIRSTMDMIP} --username admin --password admin
-  scli --mdm_ip ${FIRSTMDMIP} --set_password --old_password admin --new_password ${PASSWORD}
-  scli --mdm_ip ${FIRSTMDMIP} --login --username admin --password ${PASSWORD}
-  scli --add_secondary_mdm --mdm_ip ${FIRSTMDMIP} --secondary_mdm_ip ${SECONDMDMIP}
-  scli --add_tb --mdm_ip ${FIRSTMDMIP} --tb_ip ${TBIP}
-  scli --switch_to_cluster_mode --mdm_ip ${FIRSTMDMIP}
-  scli --add_protection_domain --mdm_ip ${FIRSTMDMIP} --protection_domain_name pdomain
-  scli --add_storage_pool --mdm_ip ${FIRSTMDMIP} --protection_domain_name pdomain --storage_pool_name pool1
-  scli --add_sds --mdm_ip ${FIRSTMDMIP} --sds_ip ${FIRSTMDMIP} --device_path ${DEVICE} --sds_name sds1 --protection_domain_name pdomain --storage_pool_name pool1
-  scli --add_sds --mdm_ip ${FIRSTMDMIP} --sds_ip ${SECONDMDMIP} --device_path ${DEVICE} --sds_name sds2 --protection_domain_name pdomain --storage_pool_name pool1
-  scli --add_sds --mdm_ip ${FIRSTMDMIP} --sds_ip ${TBIP} --device_path ${DEVICE} --sds_name sds3 --protection_domain_name pdomain --storage_pool_name pool1
+  echo "Creating cluster"
+  scli --create_mdm_cluster --master_mdm_ip ${SECONDMDMIP} --master_mdm_management_ip ${SECONDMDMIP} --master_mdm_name mdm2 --accept_license --approve_certificate
+  echo "Waiting 10 seconds to ensure services ready"
+  sleep 10
+  
+  echo "Logging in"
+  scli --login --username admin --password admin --approve_certificate
+  
+  echo "Changing Password"
+  scli --set_password --old_password admin --new_password ${PASSWORD}
+  
+  echo "Logging in and adding MDM1 as standby"
+  scli --login --username admin --password ${PASSWORD}
+  scli --add_standby_mdm --new_mdm_ip ${FIRSTMDMIP} --mdm_role manager --new_mdm_management_ip ${FIRSTMDMIP} --new_mdm_name mdm1
+  echo "Logging in and adding td as tb"
+  scli --add_standby_mdm --new_mdm_ip ${TBIP} --mdm_role tb --new_mdm_name tb
+  echo "Cluster Details before 3 node cluster setup"
+  scli --query_cluster
+  
+  echo "Swithcing to 3 node cluster" 
+  scli --switch_cluster_mode --cluster_mode 3_node --add_slave_mdm_name mdm1 --add_tb_name tb1
+  echo "Cluster Details"
+  scli --query_cluster
+  echo "Waiting for 15 seconds, see latest cluster info above (should show 3 node cluster)"
+  sleep 15
+  echo "Logging in"
+  scli --login --username admin --password ${PASSWORD}
+  echo "Adding protectoin domain"
+  scli --add_protection_domain --protection_domain_name pdomain
+  echo "Adding storage pool"
+  scli --add_storage_pool --protection_domain_name pdomain --storage_pool_name pool1
+  echo "Adding 3 SDS"
+  scli --add_sds --sds_ip ${FIRSTMDMIP} --device_path ${DEVICE} --sds_name sds1 --protection_domain_name pdomain --storage_pool_name pool1
+  scli --add_sds --sds_ip ${SECONDMDMIP} --device_path ${DEVICE} --sds_name sds2 --protection_domain_name pdomain --storage_pool_name pool1
+  scli --add_sds --sds_ip ${TBIP} --device_path ${DEVICE} --sds_name sds3 --protection_domain_name pdomain --storage_pool_name pool1
   echo "Waiting for 30 seconds to make sure the SDSs are created"
   sleep 30
-  scli --add_volume --mdm_ip ${FIRSTMDMIP} --size_gb 8 --volume_name vol1 --protection_domain_name pdomain --storage_pool_name pool1
-  scli --map_volume_to_sdc --mdm_ip ${FIRSTMDMIP} --volume_name vol1 --sdc_ip ${FIRSTMDMIP} --allow_multi_map
-  scli --map_volume_to_sdc --mdm_ip ${FIRSTMDMIP} --volume_name vol1 --sdc_ip ${SECONDMDMIP}
-  scli --map_volume_to_sdc --mdm_ip ${FIRSTMDMIP} --volume_name vol1 --sdc_ip ${TBIP} --allow_multi_map
+  echo "Logging in"
+  scli --login --username admin --password ${PASSWORD}
+  echo "Adding volume"
+  scli --add_volume --size_gb 8 --volume_name vol1 --protection_domain_name pdomain --storage_pool_name pool1
+  echo "Mapping volume locally"
+  #scli --map_volume_to_sdc --volume_name vol1 --sdc_ip ${FIRSTMDMIP} --allow_multi_map
+  scli --map_volume_to_sdc --volume_name vol1 --sdc_ip ${SECONDMDMIP}
+  #scli --map_volume_to_sdc --volume_name vol1 --sdc_ip ${TBIP} --allow_multi_map
+  
 fi
 
 echo SVMDOWNLOAD    = "${SVMDOWNLOAD}"

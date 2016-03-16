@@ -52,6 +52,10 @@ do
     SVMS="$2"
     shift
 	;;
+	-l|--svmspassword)
+    SVMSPASSWORD="$2"
+    shift
+	;;
     *)
     # unknown option
     ;;
@@ -76,14 +80,27 @@ echo SVMSERVERHTTP = "https://${SVMSERVER}"
 truncate -s 100GB ${DEVICE}
 yum install numactl libaio wget -y
 cd /vagrant
-wget -nv ftp://ftp.emc.com/Downloads/ScaleIO/ScaleIO_RHEL6_Download.zip -O ScaleIO_RHEL6_Download.zip
-unzip -o ScaleIO_RHEL6_Download.zip -d /vagrant/scaleio/
-cd /vagrant/scaleio/ScaleIO_1.32_RHEL6_Download
+
+
+#install securevm packages if needed
+echo "Installing SecureVM Packages"
+yum install parted -y
+yum install wget -y
+yum install cryptsetup -y
+yum install rsync -y
+
+#version 2.0 download uncomment to download
+#wget -nv ??????? -O ScaleIO_RHEL6_Download.zip
+#unzip -o ScaleIO_RHEL6_Download.zip -d /vagrant/scaleio2
+
+
+cd /vagrant/scaleio2
 
 if [ "${CLUSTERINSTALL}" == "True" ]; then
-  rpm -Uv ${PACKAGENAME}-tb-${VERSION}.${OS}.x86_64.rpm
-  rpm -Uv ${PACKAGENAME}-sds-${VERSION}.${OS}.x86_64.rpm
-  MDM_IP=${FIRSTMDMIP},${SECONDMDMIP} rpm -Uv ${PACKAGENAME}-sdc-${VERSION}.${OS}.x86_64.rpm
+  MDM_ROLE_IS_MANAGER=0 rpm -i ${PACKAGENAME}-mdm-${VERSION}.${OS}.x86_64.rpm
+  rpm -i ${PACKAGENAME}-sds-${VERSION}.${OS}.x86_64.rpm
+  MDM_IP=${FIRSTMDMIP},${SECONDMDMIP} rpm -i ${PACKAGENAME}-sdc-${VERSION}.${OS}.x86_64.rpm
+  
 fi
 
 
@@ -108,7 +125,7 @@ if [ "${SVMS}" == "True" ]; then
   
   echo "Running initial configuration"
   
-  node wizard.js -a ${SVMSERVERHTTP} -w new -r
+  node wizard.js -a ${SVMSERVERHTTP} -w new -s ${SVMSPASSWORD} -r
   node wizard.js -a ${SVMSERVERHTTP} -w custom
   
 fi

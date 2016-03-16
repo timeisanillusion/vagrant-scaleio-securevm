@@ -5,10 +5,11 @@
 
 
 #Use SecureVM if True, once ScaleIO is setup it install SecureVM to each VM
-svm = "True"
+svm = "False"
 
 #Setup new CloudLink Center, if True will use REST APIs to configure the initial CloudLink Center appliance
 svms = "False"
+svmspassword = "clsecadmin"
 
 #SecureVM Server please set the FQDN for example "myclc.domain.local" or "myapp.cloudapp.net"
 svmserver="192.168.116.148"
@@ -34,7 +35,7 @@ nodes = ['tb', 'mdm1', 'mdm2']
 # add your IPs here
 network = "192.168.50"
 
-clusterip = "#{network}.10"
+#clusterip = "#{network}.10"
 tbip = "#{network}.11"
 firstmdmip = "#{network}.12"
 secondmdmip = "#{network}.13"
@@ -43,7 +44,7 @@ secondmdmip = "#{network}.13"
 clusterinstall = "True" #If True a fully working ScaleIO cluster is installed. False mean only IM is installed on node MDM1.
 
 # version of installation package
-version = "1.32-402.1"
+version = "2.0-5014.0"
 
 #OS Version of package
 os="el6"
@@ -87,21 +88,22 @@ Vagrant.configure("2") do |config|
         node_config.vm.network "private_network", ip: "#{tbip}"
         node_config.vm.provision "shell" do |s|
           s.path = "scripts/tb.sh"
-          s.args   = "-o #{os} -v #{version} -n #{packagename} -d #{device} -f #{firstmdmip} -s #{secondmdmip} -i #{siinstall} -c #{clusterinstall} -e #{svmserver} -w #{svmdownload} -k #{svm} -j #{svms}"
+          s.args   = "-o #{os} -v #{version} -n #{packagename} -d #{device} -f #{firstmdmip} -s #{secondmdmip} -i #{siinstall} -c #{clusterinstall} -e #{svmserver} -w #{svmdownload} -k #{svm} -j #{svms} -l #{svmspassword}"
         end
       end
 
       if node[:hostname] == "mdm1"
         node_config.vm.network "private_network", ip: "#{firstmdmip}"
-        node_config.vm.network "forwarded_port", guest: 6611, host: 6611
+        #node_config.vm.network "forwarded_port", guest: 6611, host: 6611
         node_config.vm.provision "shell" do |s|
           s.path = "scripts/mdm1.sh"
-          s.args   = "-o #{os} -v #{version} -n #{packagename} -d #{device} -f #{firstmdmip} -s #{secondmdmip} -i #{siinstall} -p #{password} -c #{clusterinstall} -e #{svmserver} -w #{svmdownload} -k #{svm}"
+          s.args   = "-o #{os} -v #{version} -n #{packagename} -d #{device} -f #{firstmdmip} -s #{secondmdmip} -i #{siinstall} -t #{tbip} -p #{password} -c #{clusterinstall} -e #{svmserver} -w #{svmdownload} -k #{svm}"
         end
       end
 
       if node[:hostname] == "mdm2"
         node_config.vm.network "private_network", ip: "#{secondmdmip}"
+		node_config.vm.network "forwarded_port", guest: 6611, host: 6611
         node_config.vm.provision "shell" do |s|
           s.path = "scripts/mdm2.sh"
           s.args   = "-o #{os} -v #{version} -n #{packagename} -d #{device} -f #{firstmdmip} -s #{secondmdmip} -i #{siinstall} -t #{tbip} -p #{password} -c #{clusterinstall} -e #{svmserver} -w #{svmdownload} -k #{svm}"
