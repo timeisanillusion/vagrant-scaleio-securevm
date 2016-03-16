@@ -1,0 +1,54 @@
+FIRSTMDMIP=192.168.50.12
+SECONDMDMIP=192.168.50.13
+TBIP=192.168.50.11
+PASSWORD=Scaleio123
+DEVICE="/home/vagrant/scaleio1"
+VERSION="2.0-5014.0"
+OS="el6"
+PACKAGENAME="EMC-ScaleIO"
+SVMSERVER="192.168.116.151"
+SVMDOWNLOAD="http://$SVMSERVER:8080/cloudlink/securevm"
+
+
+TD
+
+sudo cp -R /vagrant/scaleio2 /home/vagrant
+sudo reboot
+
+echo "Install MDM"
+MDM_ROLE_IS_MANAGER=0 rpm -Uv ${PACKAGENAME}-mdm-${VERSION}.${OS}.x86_64.rpm
+rpm -Uv ${PACKAGENAME}-sds-${VERSION}.${OS}.x86_64.rpm
+
+yum install parted -y
+yum install wget -y
+yum install cryptsetup -y
+yum install rsync -y
+  
+rm -f securevm*.*
+  
+wget ${SVMDOWNLOAD}
+chmod +x securevm
+
+./securevm -S ${SVMSERVER}
+  
+
+
+  
+  
+MDM1
+  
+  
+MDM_ROLE_IS_MANAGER=1 rpm -Uv ${PACKAGENAME}-mdm-${VERSION}.${OS}.x86_64.rpm
+rpm -Uv ${PACKAGENAME}-sds-${VERSION}.${OS}.x86_64.rpm
+  
+yum install parted -y
+yum install wget -y
+yum install cryptsetup -y
+yum install rsync -y
+  
+rm -f securevm*.*
+  
+wget ${SVMDOWNLOAD}
+chmod +x securevm
+
+./securevm -S ${SVMSERVER}

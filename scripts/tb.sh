@@ -79,15 +79,13 @@ echo SVMSERVERHTTP = "https://${SVMSERVER}"
 #echo "Number files in SEARCH PATH with EXTENSION:" $(ls -1 "${SEARCHPATH}"/*."${EXTENSION}" | wc -l)
 truncate -s 100GB ${DEVICE}
 yum install numactl libaio wget -y
+yum install java-1.7.0-openjdk -y
+
+
 cd /vagrant
 
 
-#install securevm packages if needed
-echo "Installing SecureVM Packages"
-yum install parted -y
-yum install wget -y
-yum install cryptsetup -y
-yum install rsync -y
+
 
 #version 2.0 download uncomment to download
 #wget -nv ??????? -O ScaleIO_RHEL6_Download.zip
@@ -96,10 +94,16 @@ yum install rsync -y
 
 cd /vagrant/scaleio2
 
+echo "Message bus check"
+chkconfig messagebus on
+
+
 if [ "${CLUSTERINSTALL}" == "True" ]; then
-  MDM_ROLE_IS_MANAGER=0 rpm -i ${PACKAGENAME}-mdm-${VERSION}.${OS}.x86_64.rpm
+  echo "Install MDM"
+  MDM_ROLE_IS_MANAGER=0 rpm -Uv ${PACKAGENAME}-mdm-${VERSION}.${OS}.x86_64.rpm
   sleep 10
-  rpm -i ${PACKAGENAME}-sds-${VERSION}.${OS}.x86_64.rpm
+  echo "Install SDS"
+  rpm -Uv ${PACKAGENAME}-sds-${VERSION}.${OS}.x86_64.rpm
   sleep 10
   #MDM_IP=${FIRSTMDMIP},${SECONDMDMIP} rpm -i ${PACKAGENAME}-sdc-${VERSION}.${OS}.x86_64.rpm
 fi
@@ -133,6 +137,13 @@ fi
 
 
 if [ "${SVM}" == "True" ]; then
+  #install securevm packages if needed
+  echo "Installing SecureVM Packages"
+  yum install parted -y
+  yum install wget -y
+  yum install cryptsetup -y
+  yum install rsync -y
+  
   echo "Downloading SecureVM"
   
   #ensure fresh download of the script

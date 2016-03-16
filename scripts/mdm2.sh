@@ -79,6 +79,7 @@ echo SVMSERVER    = "${SVMSERVER}"
 #echo "Number files in SEARCH PATH with EXTENSION:" $(ls -1 "${SEARCHPATH}"/*."${EXTENSION}" | wc -l)
 truncate -s 100GB ${DEVICE}
 yum install numactl libaio -y
+yum install java-1.7.0-openjdk -y
 
 #install securevm packages if needed
 echo "Installing SecureVM Packages"
@@ -91,11 +92,11 @@ cd /vagrant/scaleio2
 
 if [ "${CLUSTERINSTALL}" == "True" ]; then
   echo "Instaling MDM, SDS and SDC"
-  MDM_ROLE_IS_MANAGER=1 rpm -i ${PACKAGENAME}-mdm-${VERSION}.${OS}.x86_64.rpm
+  MDM_ROLE_IS_MANAGER=1 rpm -Uv ${PACKAGENAME}-mdm-${VERSION}.${OS}.x86_64.rpm
   sleep 10
-  rpm -i ${PACKAGENAME}-sds-${VERSION}.${OS}.x86_64.rpm
+  rpm -Uv ${PACKAGENAME}-sds-${VERSION}.${OS}.x86_64.rpm
   sleep 10
-  MDM_IP=${FIRSTMDMIP},${SECONDMDMIP} rpm -i ${PACKAGENAME}-sdc-${VERSION}.${OS}.x86_64.rpm
+  MDM_IP=${FIRSTMDMIP},${SECONDMDMIP} rpm -Uv ${PACKAGENAME}-sdc-${VERSION}.${OS}.x86_64.rpm
 
   echo "Creating cluster"
   scli --create_mdm_cluster --master_mdm_ip ${SECONDMDMIP} --master_mdm_management_ip ${SECONDMDMIP} --master_mdm_name mdm2 --accept_license --approve_certificate

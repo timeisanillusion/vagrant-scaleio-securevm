@@ -20,9 +20,11 @@ svmdownload="http://#{svmserver}:8080/cloudlink/securevm"
 
 # vagrant box
 vagrantbox="centos_6.5"
+#vagrantbox="CentOS 7.1 x64"
 
 # vagrant box url
 vagrantboxurl="http://github.com/2creatives/vagrant-centos/releases/download/v6.5.3/centos65-x86_64-20140116.box"
+#vagrantboxurl=https://github.com/CommanderK5/packer-centos-template/releases/download/0.7.1/vagrant-centos-7.1.box
 
 # scaleio admin password
 password="Scaleio123"
@@ -35,13 +37,13 @@ nodes = ['tb', 'mdm1', 'mdm2']
 # add your IPs here
 network = "192.168.50"
 
-#clusterip = "#{network}.10"
+clusterip = "#{network}.10"
 tbip = "#{network}.11"
 firstmdmip = "#{network}.12"
 secondmdmip = "#{network}.13"
 
 # Install ScaleIO cluster automatically or IM only
-clusterinstall = "True" #If True a fully working ScaleIO cluster is installed. False mean only IM is installed on node MDM1.
+clusterinstall = "False" #If True a fully working ScaleIO cluster is installed. False mean only IM is installed on node MDM1.
 
 # version of installation package
 version = "2.0-5014.0"
@@ -86,7 +88,7 @@ Vagrant.configure("2") do |config|
       end
       if node[:hostname] == "tb"
         node_config.vm.network "private_network", ip: "#{tbip}"
-        node_config.vm.provision "shell" do |s|
+		node_config.vm.provision "shell" do |s|
           s.path = "scripts/tb.sh"
           s.args   = "-o #{os} -v #{version} -n #{packagename} -d #{device} -f #{firstmdmip} -s #{secondmdmip} -i #{siinstall} -c #{clusterinstall} -e #{svmserver} -w #{svmdownload} -k #{svm} -j #{svms} -l #{svmspassword}"
         end
@@ -94,7 +96,6 @@ Vagrant.configure("2") do |config|
 
       if node[:hostname] == "mdm1"
         node_config.vm.network "private_network", ip: "#{firstmdmip}"
-        node_config.vm.network "forwarded_port", guest: 6611, host: 6611
         node_config.vm.provision "shell" do |s|
           s.path = "scripts/mdm1.sh"
           s.args   = "-o #{os} -v #{version} -n #{packagename} -d #{device} -f #{firstmdmip} -s #{secondmdmip} -i #{siinstall} -t #{tbip} -p #{password} -c #{clusterinstall} -e #{svmserver} -w #{svmdownload} -k #{svm}"
@@ -104,6 +105,7 @@ Vagrant.configure("2") do |config|
       if node[:hostname] == "mdm2"
         node_config.vm.network "private_network", ip: "#{secondmdmip}"
 		#node_config.vm.network "forwarded_port", guest: 6611, host: 6611
+		#node_config.vm.network "forwarded_port", guest: 9011, host: 9011
         node_config.vm.provision "shell" do |s|
           s.path = "scripts/mdm2.sh"
           s.args   = "-o #{os} -v #{version} -n #{packagename} -d #{device} -f #{firstmdmip} -s #{secondmdmip} -i #{siinstall} -t #{tbip} -p #{password} -c #{clusterinstall} -e #{svmserver} -w #{svmdownload} -k #{svm}"

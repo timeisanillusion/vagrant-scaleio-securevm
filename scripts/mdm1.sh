@@ -94,9 +94,9 @@ cd /vagrant/scaleio2
 #rpm -Uv ${PACKAGENAME}-gateway-${VERSION}.noarch.rpm
 
 if [ "${CLUSTERINSTALL}" == "True" ]; then
-  MDM_ROLE_IS_MANAGER=1 rpm -i ${PACKAGENAME}-mdm-${VERSION}.${OS}.x86_64.rpm
+  MDM_ROLE_IS_MANAGER=1 rpm -Uv ${PACKAGENAME}-mdm-${VERSION}.${OS}.x86_64.rpm
   sleep 10
-  rpm -i ${PACKAGENAME}-sds-${VERSION}.${OS}.x86_64.rpm
+  rpm -Uv ${PACKAGENAME}-sds-${VERSION}.${OS}.x86_64.rpm
   #MDM_IP=${FIRSTMDMIP},${SECONDMDMIP} rpm -i ${PACKAGENAME}-sdc-${VERSION}.${OS}.x86_64.rpm
   
 fi
