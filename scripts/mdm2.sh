@@ -92,7 +92,9 @@ cd /vagrant/scaleio2
 if [ "${CLUSTERINSTALL}" == "True" ]; then
   echo "Instaling MDM, SDS and SDC"
   MDM_ROLE_IS_MANAGER=1 rpm -i ${PACKAGENAME}-mdm-${VERSION}.${OS}.x86_64.rpm
+  sleep 10
   rpm -i ${PACKAGENAME}-sds-${VERSION}.${OS}.x86_64.rpm
+  sleep 10
   MDM_IP=${FIRSTMDMIP},${SECONDMDMIP} rpm -i ${PACKAGENAME}-sdc-${VERSION}.${OS}.x86_64.rpm
 
   echo "Creating cluster"
